@@ -1,9 +1,14 @@
-import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo';
+import { SignedIn, SignedOut, useUser, useAuth } from '@clerk/clerk-expo';
 import { Link } from 'expo-router';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from "react-native";
 
 export default function Index() {
   const { user } = useUser();
+  const { signOut } = useAuth();
+
+  const handleSignOut = () => {
+    signOut();
+  };
 
   return (
     <View style={styles.container}>
@@ -11,6 +16,12 @@ export default function Index() {
         <ScrollView>
           <View style={styles.header}>
             <Text style={styles.welcomeText}>Welcome, {user?.emailAddresses[0].emailAddress}</Text>
+            <TouchableOpacity 
+              style={styles.signOutButton} 
+              onPress={handleSignOut}
+            >
+              <Text style={styles.signOutText}>Sign Out</Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.menuContainer}>
@@ -62,6 +73,9 @@ const styles = StyleSheet.create({
   header: {
     padding: 20,
     backgroundColor: '#4a90e2',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   welcomeText: {
     fontSize: 20,
@@ -115,6 +129,16 @@ const styles = StyleSheet.create({
   authButtonText: {
     color: '#ffffff',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  signOutButton: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  signOutText: {
+    color: '#4a90e2',
     fontWeight: '600',
   },
 });
