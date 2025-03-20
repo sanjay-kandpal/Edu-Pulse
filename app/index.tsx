@@ -1,29 +1,26 @@
 import { SignedIn, SignedOut, useUser, useAuth } from '@clerk/clerk-expo';
 import { Link } from 'expo-router';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from "react-native";
+import { Header } from './components/Headers';
+import  SearchBar  from './components/SearchBar';
+import GlobalApi from './Shared/GlobalApi';
+import { useEffect } from 'react';
 
 export default function Index() {
-  const { user } = useUser();
-  const { signOut } = useAuth();
-
-  const handleSignOut = () => {
-    signOut();
-  };
-
+  useEffect(() => {
+    getSlider();
+  }, [])
+  const getSlider = async( ) =>{
+    const result = (await GlobalApi.getSlider()).data ;
+    console.log(result);
+    
+  } 
   return (
     <View style={styles.container}>
       <SignedIn>
         <ScrollView>
-          <View style={styles.header}>
-            <Text style={styles.welcomeText}>Welcome, {user?.emailAddresses[0].emailAddress}</Text>
-            <TouchableOpacity 
-              style={styles.signOutButton} 
-              onPress={handleSignOut}
-            >
-              <Text style={styles.signOutText}>Sign Out</Text>
-            </TouchableOpacity>
-          </View>
-
+          <Header />
+          <SearchBar />
           <View style={styles.menuContainer}>
             <TouchableOpacity style={styles.menuItem}>
               <Text style={styles.menuItemText}>Health Articles</Text>
@@ -69,18 +66,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-  },
-  header: {
-    padding: 20,
-    backgroundColor: '#4a90e2',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  welcomeText: {
-    fontSize: 20,
-    color: '#ffffff',
-    fontWeight: 'bold',
   },
   menuContainer: {
     padding: 15,
@@ -129,16 +114,6 @@ const styles = StyleSheet.create({
   authButtonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
-  },
-  signOutButton: {
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  signOutText: {
-    color: '#4a90e2',
     fontWeight: '600',
   },
 });
