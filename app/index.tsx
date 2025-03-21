@@ -3,41 +3,22 @@ import { Link } from 'expo-router';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from "react-native";
 import { Header } from './components/Headers';
 import  SearchBar  from './components/SearchBar';
-import GlobalApi from './Shared/GlobalApi';
-import { useEffect } from 'react';
+import VideoCourseList from './components/VideoCourseList';
+import Slider from './components/Slider';
+import CourseList from './components/CourseList';
 
 export default function Index() {
-  useEffect(() => {
-    getSlider();
-  }, [])
-  const getSlider = async( ) =>{
-    const result = (await GlobalApi.getSlider()).data ;
-    console.log(result);
-    
-  } 
+   
   return (
     <View style={styles.container}>
       <SignedIn>
         <ScrollView>
           <Header />
           <SearchBar />
-          <View style={styles.menuContainer}>
-            <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuItemText}>Health Articles</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuItemText}>Daily Health Tips</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuItemText}>Exercise Guides</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuItemText}>Nutrition Information</Text>
-            </TouchableOpacity>
-          </View>
+          <Slider />
+          <VideoCourseList />
+          <CourseList type={'basic'} />
+          <CourseList type={'advanced'} />
         </ScrollView>
       </SignedIn>
 

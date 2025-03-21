@@ -12,6 +12,12 @@ const api = create({
 
 const getSlider =()=>api.get('/sliders?populate=*');
 
+const getVideoCourse = () => api.get('/video-courses?populate=*');
+
+const getCourseList = () => api.get('/course-lists?populate=*');
+
 export default {
-  getSlider
-}
+  getSlider,
+  getVideoCourse,
+  getCourseList
+} 
