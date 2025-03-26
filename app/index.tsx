@@ -1,27 +1,43 @@
-import { SignedIn, SignedOut, useUser, useAuth } from '@clerk/clerk-expo';
+import React from 'react';
+import { SignedIn, SignedOut } from '@clerk/clerk-expo';
 import { Link } from 'expo-router';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from "react-native";
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  ScrollView, 
+  TouchableOpacity
+} from "react-native";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Header } from './components/Headers';
-import  SearchBar  from './components/SearchBar';
+import SearchBar from './components/SearchBar';
 import VideoCourseList from './components/VideoCourseList';
 import Slider from './components/Slider';
 import CourseList from './components/CourseList';
+import WaterTracker from './components/WaterTracker';
 
 export default function Index() {
-   
   return (
-    <View style={styles.container}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <SignedIn>
-        <ScrollView>
+        <>
+          {/* Header */}
           <Header />
-          <SearchBar />
-          <Slider />
-          <VideoCourseList />
-          <CourseList type={'basic'} />
-          <CourseList type={'advanced'} />
-        </ScrollView>
-      </SignedIn>
 
+          {/* Main Content */}
+          <View style={styles.contentContainer}>
+            <ScrollView>
+              <SearchBar />
+              <Slider />
+              <VideoCourseList />
+              <CourseList type="basic" />
+              <CourseList type="advanced" />
+            </ScrollView>
+            <WaterTracker />
+          </View>
+        </>
+      </SignedIn>
+      
       <SignedOut>
         <View style={styles.authContainer}>
           <Text style={styles.headerText}>Welcome to EduHealth</Text>
@@ -39,36 +55,13 @@ export default function Index() {
           </View>
         </View>
       </SignedOut>
-    </View>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  contentContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  menuContainer: {
-    padding: 15,
-  },
-  menuItem: {
-    backgroundColor: '#ffffff',
-    padding: 20,
-    borderRadius: 10,
-    marginVertical: 8,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  menuItemText: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#333333',
   },
   authContainer: {
     flex: 1,

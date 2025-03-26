@@ -18,7 +18,7 @@ interface SliderData {
   name: string;
   imageUrl: string;
 }
-const BASE_URL = 'http://localhost:1337';
+const BASE_URL = `http://${process.env.EXPO_PUBLIC_IP}:1337`;
 export default function Slider() {
   // State to hold formatted slider data
   const [slider, setSlider] = useState<SliderData[]>([]);

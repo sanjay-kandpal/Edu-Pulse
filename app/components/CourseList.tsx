@@ -81,7 +81,7 @@ interface CourseItem {
 
 export default function CourseList() {
   const [courseList, setCourseList] = useState<CourseItem[]>([]);
-  const BASE_URL = 'http://localhost:1337';
+  const BASE_URL = `http://${process.env.EXPO_PUBLIC_IP}:1337`;
   useEffect(() => {
     getCourseList();
   }, []);

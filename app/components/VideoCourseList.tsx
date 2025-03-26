@@ -86,7 +86,7 @@ interface VideoListItem {
 export default function VideoCourseList() {
   const [videoList, setVideoList] = useState<VideoListItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const BASE_URL = 'http://localhost:1337';
+  const BASE_URL =  `http://${process.env.EXPO_PUBLIC_IP}:1337`;
   useEffect(() => {
     getVideoCourse();
   }, []);
@@ -123,7 +123,8 @@ export default function VideoCourseList() {
           <FlatList
             data={videoList}
             keyExtractor={(item) => item.id.toString()}
-            horizontal={TurboModuleRegistry}
+            
+            horizontal={true}
             renderItem={({ item }) => (
               <View style={{ padding: 10, marginVertical: 5 }}>
                 <Image 
