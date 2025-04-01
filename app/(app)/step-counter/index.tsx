@@ -3,12 +3,18 @@ import { View, StyleSheet,Text } from 'react-native';
 import { Header } from '../../components/Headers';
 import { StatusBar } from 'expo-status-bar';
 import Value from '@/app/components/Value';
+import RingProgress from '@/app/components/RingProgress';
 
 
 export default function VideoCoursesScreen() {
   return (
     <View style={styles.container}>
       <Header />
+      <RingProgress
+        radius={150}
+        strokeWidth={50}
+        progress={0.9}
+      />
       <View style={styles.content}>
         
         <Value label="Steps" value="1219" />
