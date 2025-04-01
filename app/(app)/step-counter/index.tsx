@@ -2,18 +2,8 @@ import React from 'react';
 import { View, StyleSheet,Text } from 'react-native';
 import { Header } from '../../components/Headers';
 import { StatusBar } from 'expo-status-bar';
+import Value from '@/app/components/Value';
 
-type ValueProps = {
-  label: String;
-  value: String;
-}
-
-const Value = ({label,value}: ValueProps) => (
-  <View style={styles.valueContainer}>  
-    <Text style={styles.label}>{label}</Text>
-    <Text style={styles.value}>{value}</Text>
-  </View>
-)
 
 export default function VideoCoursesScreen() {
   return (
@@ -21,7 +11,7 @@ export default function VideoCoursesScreen() {
       <Header />
       <View style={styles.content}>
         
-        <Value label="Steps" value={1219} />
+        <Value label="Steps" value="1219" />
         <Value label="Distance" value="0,75km" />
       
       </View>
@@ -40,21 +30,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 12,
   },
-  valueContainer:{
-    marginRight: 50,
-    marginVertical: 10,
-  },
+  
   content: {
     flex: 1,
+    flexDirection: 'row',
+    gap: 25,
     paddingBottom: 80, // Add padding to avoid chatbot button overlap
   },
-  label:{
-    color: 'white',
-    fontSize: 20,
-  },
-  value: {
-    fontSize: 35,
-    color: '#AFB3BE',
-    fontWeight: '500',
-  },
+  values: {
+    flexDirection: 'row',
+    gap: 25,
+    flexWrap: 'wrap'
+  }
 });
