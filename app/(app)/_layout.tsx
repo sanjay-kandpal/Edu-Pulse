@@ -1,6 +1,8 @@
 import { Stack } from 'expo-router/stack';
 import { useAuth } from '@clerk/clerk-expo';
 import { Redirect } from 'expo-router';
+import { View } from 'react-native';
+import HealthCareChatBot from '../components/HealthCareChatBot';
 
 export default function AppLayout() {
   const { isSignedIn } = useAuth();
@@ -11,23 +13,26 @@ export default function AppLayout() {
   }
 
   return (
-    <Stack>
-      <Stack.Screen 
-        name="index" 
-        options={{ headerShown: false }} 
-      />
-      <Stack.Screen 
-        name="courses/index" 
-        options={{ headerShown: false }} 
-      />
-      <Stack.Screen 
-        name="video-courses/index" 
-        options={{ headerShown: false }} 
-      />
-      <Stack.Screen 
-        name="leaderboard/index" 
-        options={{ headerShown: false }} 
-      />
-    </Stack>
+    <View style={{flex: 1}}>
+      <Stack>
+        <Stack.Screen 
+          name="index" 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="courses/index" 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="video-courses/index" 
+          options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+          name="leaderboard/index" 
+          options={{ headerShown: false }} 
+        />
+      </Stack>
+      <HealthCareChatBot />
+    </View>
   );
 }

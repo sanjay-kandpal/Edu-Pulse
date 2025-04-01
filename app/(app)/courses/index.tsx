@@ -7,7 +7,9 @@ export default function CoursesScreen() {
   return (
     <View style={styles.container}>
       <Header />
-      <CourseList />
+      <View style={styles.content}>
+        <CourseList />
+      </View>
     </View>
   );
 }
@@ -15,5 +17,9 @@ export default function CoursesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  content: {
+    flex: 1,
+    paddingBottom: 80, // Add padding to avoid chatbot button overlap
   },
 });

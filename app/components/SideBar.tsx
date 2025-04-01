@@ -16,7 +16,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const menuItems = useMemo(() => [
     { title: 'Home', route: '/' },
     { title: 'Courses', route: '/(app)/courses' },
-    { title: 'Video Courses', route: '/(app)/video-courses' },
+    { title: 'Step Counter', route: '/(app)/step-counter' },
     { title: 'WaterChallenge Leaderboard', route: '/(app)/leaderboard' }
   ], []);
 
