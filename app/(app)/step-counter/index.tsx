@@ -1,30 +1,57 @@
-import React from 'react';
-import { View, StyleSheet,Text } from 'react-native';
-import { Header } from '../../components/Headers';
 import { StatusBar } from 'expo-status-bar';
-import Value from '@/app/components/Value';
-import RingProgress from '@/app/components/RingProgress';
+import { StyleSheet, Text, View } from 'react-native';
+import Value from '../../components/Value';
+import RingProgress from '../../components/RingProgress';
+import { useState } from 'react';
+import useHealthData from '../../hooks/useHealthData';
+import { AntDesign } from '@expo/vector-icons';
 
+const STEPS_GOAL = 10_000;
 
-export default function VideoCoursesScreen() {
+export default function App() {
+  const [date, setDate] = useState(new Date());
+  const { steps, flights, distance } = useHealthData(date);
+
+  const changeDate = (numDays) => {
+    const currentDate = new Date(date); // Create a copy of the current date
+    // Update the date by adding/subtracting the number of days
+    currentDate.setDate(currentDate.getDate() + numDays);
+
+    setDate(currentDate); // Update the state variable
+  };
+
   return (
     <View style={styles.container}>
-      <Header />
+      <View style={styles.datePicker}>
+        <AntDesign
+          onPress={() => changeDate(-1)}
+          name="left"
+          size={20}
+          color="#C3FF53"
+        />
+        <Text style={styles.date}>{date.toDateString()}</Text>
+
+        <AntDesign
+          onPress={() => changeDate(1)}
+          name="right"
+          size={20}
+          color="#C3FF53"
+        />
+      </View>
+
       <RingProgress
         radius={150}
         strokeWidth={50}
-        progress={0.9}
+        progress={steps / STEPS_GOAL}
       />
-      <View style={styles.content}>
-        
-        <Value label="Steps" value="1219" />
-        <Value label="Distance" value="0,75km" />
-      
+
+      <View style={styles.values}>
+        <Value label="Steps" value={steps.toString()} />
+        <Value label="Distance" value={`${(distance / 1000).toFixed(2)} km`} />
+        <Value label="Flights Climbed" value={flights.toString()} />
       </View>
-      
-      <Value label="Flights Climbed" value="12" />
-      
-      <StatusBar style='auto' />
+
+      <StatusBar style="auto" />
     </View>
   );
 }
@@ -36,16 +63,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 12,
   },
-  
-  content: {
-    flex: 1,
-    flexDirection: 'row',
-    gap: 25,
-    paddingBottom: 80, // Add padding to avoid chatbot button overlap
-  },
   values: {
     flexDirection: 'row',
     gap: 25,
-    flexWrap: 'wrap'
-  }
+    flexWrap: 'wrap',
+    marginTop: 100,
+  },
+  datePicker: {
+    alignItems: 'center',
+    padding: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  date: {
+    color: 'white',
+    fontWeight: '500',
+    fontSize: 20,
+    marginHorizontal: 20,
+  },
 });

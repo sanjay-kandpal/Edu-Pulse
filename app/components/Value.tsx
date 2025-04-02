@@ -1,33 +1,27 @@
- import { View, StyleSheet,Text } from 'react-native';
-
+import { StyleSheet, Text, View } from 'react-native';
 
 type ValueProps = {
-  label: String;
-  value: String;
-}
+  label: string;
+  value: string;
+};
 
-const Value = ({label,value}: ValueProps) => (
-  <View>  
+const Value = ({ label, value }: ValueProps) => (
+  <View>
     <Text style={styles.label}>{label}</Text>
     <Text style={styles.value}>{value}</Text>
   </View>
-)
+);
 
 const styles = StyleSheet.create({
-    label:{
-      color: 'white',
-      fontSize: 20,
-    },
-    value: {
-      fontSize: 35,
-      color: '#AFB3BE',
-      fontWeight: '500',
-    },
-    values: {
-      flexDirection: 'row',
-      gap: 25,
-      flexWrap: 'wrap'
-    }
-  });
+  label: {
+    color: 'white',
+    fontSize: 20,
+  },
+  value: {
+    fontSize: 45,
+    color: '#AFB3BE',
+    fontWeight: '500',
+  },
+});
 
-export default Value
+export default Value;
