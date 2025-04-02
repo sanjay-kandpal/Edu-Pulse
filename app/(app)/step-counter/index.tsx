@@ -5,7 +5,7 @@ import RingProgress from '../../components/RingProgress';
 import { useState } from 'react';
 import useHealthData from '../../hooks/useHealthData';
 import { AntDesign } from '@expo/vector-icons';
-
+import { Header } from '@/app/components/Headers';
 const STEPS_GOAL = 10_000;
 
 export default function App() {
@@ -22,6 +22,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
+      <Header />
       <View style={styles.datePicker}>
         <AntDesign
           onPress={() => changeDate(-1)}

@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vadinsavin.StepCounter"
     },
     "android": {
       "adaptiveIcon": {
@@ -39,7 +40,21 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "react-native-health",
+        {
+          "isClinicalDataEnabled": false,
+          "healthSharePermission": "Health data is used to display your activity and provide insights.",
+          "healthUpdatePermission": "Health data is used to track your activity."
+        }
+      ],
+      [
+        "react-native-health-connect",
+        {
+          "packageName": "com.vadinsavin.StepCounter"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
