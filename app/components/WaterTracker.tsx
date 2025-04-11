@@ -32,8 +32,6 @@ const WaterTracker = () => {
     
     // Extract name from Clerk email if available
     if (isLoaded && isSignedIn && user?.primaryEmailAddress) {
-      
-      
       const email = user.primaryEmailAddress.emailAddress;
       const extractedName = email.split('@')[0];
       console.log(extractedName);
@@ -124,18 +122,6 @@ const WaterTracker = () => {
     }
   };
   
-  // Load screen time from storage
-  // const loadScreenTimeFromStorage = async () => {
-  //   try {
-  //     const today = new Date().toDateString();
-  //     const savedTime = await SecureStore.getItemAsync(`screenTime_${today}`);
-  //     return savedTime ? parseFloat(savedTime) : 0;
-  //   } catch (error) {
-  //     console.error('Error loading screen time:', error);
-  //     return 0;
-  //   }
-  // };
-  
   // Update screen time state with current value
   const updateScreenTimeState = () => {
     const now = Date.now();
@@ -170,8 +156,6 @@ const WaterTracker = () => {
         // If no last prompt date, we should prompt
         showSlider();
       }
-      
-      // Note: We no longer load the name from SecureStore as we're getting it from Clerk
     } catch (error) {
       console.error('Error loading health tracker data:', error);
     }
@@ -189,8 +173,7 @@ const WaterTracker = () => {
     }
   };
 
-  // Save last prompt date to secu
-  // re storage
+  // Save last prompt date to secure storage
   const saveLastPromptDate = async (date) => {
     try {
       await SecureStore.setItemAsync('waterTracker_lastPromptDate', date);
@@ -207,8 +190,6 @@ const WaterTracker = () => {
       console.error('Error saving completed days:', error);
     }
   };
-  
-  // We no longer need to save name to secure storage as we get it from Clerk
 
   const showSlider = () => {
     setIsVisible(true);
@@ -232,20 +213,23 @@ const WaterTracker = () => {
     setCompletedDays(newCompletedDays);
     saveCompletedDays(newCompletedDays);
     
-    // Update water intake if form is not shown yet
-    if (!showFullForm) {
-      setWaterIntake(prevWater => {
-        const newWater = prevWater === '' ? '1' : (parseInt(prevWater) + 1).toString();
-        return newWater;
-      });
-    }
+    // Update water intake
+    setWaterIntake(prevWater => {
+      const newWater = prevWater === '' ? '1' : (parseInt(prevWater) + 1).toString();
+      return newWater;
+    });
     
-    // Show the full form after confirming water intake
-    setShowFullForm(true);
+    // Don't show the form, just hide the slider after tracking water intake
+    hideSlider();
   };
 
   const handleNo = () => {
-    // Show the full form even if they haven't had water yet
+    // Just hide the slider without showing the form
+    hideSlider();
+  };
+  
+  const handleShowForm = () => {
+    // Add this function to explicitly show the form if needed
     setShowFullForm(true);
   };
   
@@ -265,8 +249,6 @@ const WaterTracker = () => {
       WaterIntake: parseInt(waterIntake) || 0,
       screenTime: parseFloat(screenTime) || 0
     };
-    
-    // No need to save name as we get it from Clerk
     
     try {
       // Send the data to the API
@@ -539,6 +521,30 @@ const styles = StyleSheet.create({
   },
   moodText: {
     color: 'white',
+  },
+  nameDisplay: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+  },
+  nameText: {
+    color: 'white',
+  },
+  screenTimeContainer: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+  },
+  screenTimeText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  screenTimeSubtext: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 12,
+    marginTop: 3,
   },
   submitButton: {
     backgroundColor: '#2ecc71',
