@@ -31,6 +31,10 @@ export default function AppLayout() {
           name="leaderboard/index" 
           options={{ headerShown: false }} 
         />
+        <Stack.Screen 
+          name="step-counter/index" 
+          options={{ headerShown: false }} 
+        />
       </Stack>
       <HealthCareChatBot />
     </View>

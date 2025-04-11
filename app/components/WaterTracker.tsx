@@ -1,18 +1,157 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, TextInput, ScrollView, Platform, AppState } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { useAuth } from '@clerk/clerk-expo'; // Import Clerk authentication
 
 const WaterTracker = () => {
-  const [isVisible, setIsVisible] = useState(true); // Set to true for testing
+  const { isLoaded, isSignedIn, user } = useAuth();
+  const [isVisible, setIsVisible] = useState(true);
   const [completedDays, setCompletedDays] = useState(0);
   const [lastPromptDate, setLastPromptDate] = useState(null);
-  const slideAnim = new Animated.Value(0); // Start already visible for testing
+  const slideAnim = new Animated.Value(0);
+  
+  // Screen time tracking
+  const [screenTime, setScreenTime] = useState('');
+  const appState = useRef(AppState.currentState);
+  const activeTimeRef = useRef(0);
+  const startTimeRef = useRef(null);
+  const lastActiveTimeRef = useRef(0);
+  const appStateChangeTime = useRef(Date.now());
+  
+  // Form state
+  const [name, setName] = useState('');
+  const [sleepHours, setSleepHours] = useState('');
+  const [mood, setMood] = useState('');
+  const [waterIntake, setWaterIntake] = useState('');
+  const [showFullForm, setShowFullForm] = useState(false);
 
-  // Load saved data when component mounts
+  // Load saved data and start tracking screen time
   useEffect(() => {
     loadSavedData();
-    showSlider(); // Force visible for testing
-  }, []);
+    showSlider();
+    
+    // Extract name from Clerk email if available
+    if (isLoaded && isSignedIn && user?.primaryEmailAddress) {
+      
+      
+      const email = user.primaryEmailAddress.emailAddress;
+      const extractedName = email.split('@')[0];
+      console.log(extractedName);
+      
+      setName(extractedName);
+    }
+    
+    // Start tracking screen time
+    startScreenTimeTracking();
+    
+    // Cleanup function
+    return () => {
+      if (Platform.OS === 'web') {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      } else {
+        AppState.removeEventListener('change', handleAppStateChange);
+      }
+    };
+  }, [isLoaded, isSignedIn, user]);
+  
+  // Start tracking screen time based on platform
+  const startScreenTimeTracking = async () => {
+    // Reset tracking values
+    activeTimeRef.current = 0;
+    startTimeRef.current = Date.now();
+    
+    try {
+      // Load previous screen time from storage
+      const savedTime = await loadScreenTimeFromStorage();
+      lastActiveTimeRef.current = typeof savedTime === 'number' ? savedTime : 0;
+      
+      if (Platform.OS === 'web') {
+        // For web, track time spent in the app/tab
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        handleVisibilityChange(); // Initialize state
+      } else {
+        // For mobile (especially Android), track when app is active
+        AppState.addEventListener('change', handleAppStateChange);
+      }
+    } catch (error) {
+      console.error('Error starting screen time tracking:', error);
+      lastActiveTimeRef.current = 0;
+    }
+  };
+  
+  // Handle app state changes for mobile
+  const handleAppStateChange = (nextAppState) => {
+    const now = Date.now();
+    
+    if (appState.current === 'active' && nextAppState !== 'active') {
+      // App is going to background
+      const timeSpent = (now - appStateChangeTime.current) / 1000 / 60 / 60; // Convert to hours
+      activeTimeRef.current += timeSpent;
+      saveScreenTimeToStorage(activeTimeRef.current + lastActiveTimeRef.current);
+    } else if (appState.current !== 'active' && nextAppState === 'active') {
+      // App is coming to foreground
+      appStateChangeTime.current = now;
+    }
+    
+    appState.current = nextAppState;
+    updateScreenTimeState();
+  };
+  
+  // Handle visibility changes for web
+  const handleVisibilityChange = () => {
+    const now = Date.now();
+    
+    if (document.visibilityState === 'hidden' && startTimeRef.current) {
+      // Tab is hidden, calculate active time
+      const timeSpent = (now - startTimeRef.current) / 1000 / 60 / 60; // Convert to hours
+      activeTimeRef.current += timeSpent;
+      saveScreenTimeToStorage(activeTimeRef.current + lastActiveTimeRef.current);
+    } else if (document.visibilityState === 'visible') {
+      // Tab is visible, reset start time
+      startTimeRef.current = now;
+    }
+    
+    updateScreenTimeState();
+  };
+  
+  // Save screen time to storage
+  const saveScreenTimeToStorage = async (time) => {
+    try {
+      const today = new Date().toDateString();
+      await SecureStore.setItemAsync(`screenTime_${today}`, time.toString());
+    } catch (error) {
+      console.error('Error saving screen time:', error);
+    }
+  };
+  
+  // Load screen time from storage
+  // const loadScreenTimeFromStorage = async () => {
+  //   try {
+  //     const today = new Date().toDateString();
+  //     const savedTime = await SecureStore.getItemAsync(`screenTime_${today}`);
+  //     return savedTime ? parseFloat(savedTime) : 0;
+  //   } catch (error) {
+  //     console.error('Error loading screen time:', error);
+  //     return 0;
+  //   }
+  // };
+  
+  // Update screen time state with current value
+  const updateScreenTimeState = () => {
+    const now = Date.now();
+    let currentActiveTime = activeTimeRef.current;
+    
+    // If currently active, add current session time
+    if ((Platform.OS === 'web' && document.visibilityState === 'visible') || 
+        (Platform.OS !== 'web' && appState.current === 'active')) {
+      currentActiveTime += (now - (startTimeRef.current || now)) / 1000 / 60 / 60;
+    }
+    
+    const totalTime = currentActiveTime + lastActiveTimeRef.current;
+    // Ensure we're dealing with a number before using toFixed
+    const formattedTime = typeof totalTime === 'number' ? totalTime.toFixed(1) : '0.0';
+    setScreenTime(formattedTime);
+  };
 
   // Load data from secure storage
   const loadSavedData = async () => {
@@ -31,8 +170,10 @@ const WaterTracker = () => {
         // If no last prompt date, we should prompt
         showSlider();
       }
+      
+      // Note: We no longer load the name from SecureStore as we're getting it from Clerk
     } catch (error) {
-      console.error('Error loading water tracker data:', error);
+      console.error('Error loading health tracker data:', error);
     }
   };
 
@@ -48,7 +189,8 @@ const WaterTracker = () => {
     }
   };
 
-  // Save last prompt date to secure storage
+  // Save last prompt date to secu
+  // re storage
   const saveLastPromptDate = async (date) => {
     try {
       await SecureStore.setItemAsync('waterTracker_lastPromptDate', date);
@@ -65,6 +207,8 @@ const WaterTracker = () => {
       console.error('Error saving completed days:', error);
     }
   };
+  
+  // We no longer need to save name to secure storage as we get it from Clerk
 
   const showSlider = () => {
     setIsVisible(true);
@@ -88,65 +232,191 @@ const WaterTracker = () => {
     setCompletedDays(newCompletedDays);
     saveCompletedDays(newCompletedDays);
     
-    // Save today's date as the last prompt date
-    const today = new Date().toDateString();
-    setLastPromptDate(today);
-    saveLastPromptDate(today);
+    // Update water intake if form is not shown yet
+    if (!showFullForm) {
+      setWaterIntake(prevWater => {
+        const newWater = prevWater === '' ? '1' : (parseInt(prevWater) + 1).toString();
+        return newWater;
+      });
+    }
     
-    hideSlider();
+    // Show the full form after confirming water intake
+    setShowFullForm(true);
   };
 
   const handleNo = () => {
-    hideSlider();
+    // Show the full form even if they haven't had water yet
+    setShowFullForm(true);
+  };
+  
+  const handleSubmit = async () => {
+    // Update screen time one final time before submission
+    updateScreenTimeState();
+    
+    // Get the current date in ISO format
+    const currentDate = new Date().toISOString();
+    
+    // Create the health data object
+    const healthData = {
+      name: name,
+      date: currentDate,
+      sleepHours: parseInt(sleepHours) || 0,
+      mood: mood || "neutral",
+      WaterIntake: parseInt(waterIntake) || 0,
+      screenTime: parseFloat(screenTime) || 0
+    };
+    
+    // No need to save name as we get it from Clerk
+    
+    try {
+      // Send the data to the API
+      const response = await fetch('/api/health', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(healthData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      
+      // Save today's date as the last prompt date
+      const today = new Date().toDateString();
+      setLastPromptDate(today);
+      saveLastPromptDate(today);
+      
+      // Reset form fields except name
+      setSleepHours('');
+      setMood('');
+      setWaterIntake('');
+      // Don't reset screenTime as it continues to accumulate
+      setShowFullForm(false);
+      
+      // Hide the slider
+      hideSlider();
+      
+    } catch (error) {
+      console.error('Error submitting health data:', error);
+      alert('Failed to submit health data. Please try again later.');
+    }
   };
 
   // For testing purposes, we're not returning null when invisible
-  // In production, you might want to uncomment this line
   if (!isVisible) return null;
 
   return (
     <Animated.View 
       style={[
         styles.container, 
-        { transform: [{ translateX: slideAnim }] }
+        { transform: [{ translateX: slideAnim }] },
+        showFullForm && styles.expandedContainer
       ]}
     >
-      <View style={styles.content}>
-        <Text style={styles.title}>Water Tracker</Text>
-        <Text style={styles.question}>
-          Have you drunk water today?
-        </Text>
-        <View style={styles.progressContainer}>
-          {[...Array(7)].map((_, index) => (
-            <View 
-              key={index} 
-              style={[
-                styles.dayCircle, 
-                index < completedDays ? styles.completed : {}
-              ]}
-            >
-              <Text style={styles.dayText}>{index + 1}</Text>
+      <ScrollView style={styles.content}>
+        <Text style={styles.title}>Health Tracker</Text>
+        
+        {!showFullForm ? (
+          <>
+            <Text style={styles.question}>
+              Have you drunk water today?
+            </Text>
+            <View style={styles.progressContainer}>
+              {[...Array(7)].map((_, index) => (
+                <View 
+                  key={index} 
+                  style={[
+                    styles.dayCircle, 
+                    index < completedDays ? styles.completed : {}
+                  ]}
+                >
+                  <Text style={styles.dayText}>{index + 1}</Text>
+                </View>
+              ))}
             </View>
-          ))}
-        </View>
-        <Text style={styles.progress}>
-          {completedDays}/7 days completed
-        </Text>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={[styles.button, styles.yesButton]} 
-            onPress={handleYes}
-          >
-            <Text style={styles.buttonText}>Yes</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.button, styles.noButton]} 
-            onPress={handleNo}
-          >
-            <Text style={styles.buttonText}>Not yet</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+            <Text style={styles.progress}>
+              {completedDays}/7 days completed
+            </Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity 
+                style={[styles.button, styles.yesButton]} 
+                onPress={handleYes}
+              >
+                <Text style={styles.buttonText}>Yes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.button, styles.noButton]} 
+                onPress={handleNo}
+              >
+                <Text style={styles.buttonText}>Not yet</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        ) : (
+          <>
+            <Text style={styles.formHeader}>Daily Health Form</Text>
+            
+            <Text style={styles.label}>Name (from your email)</Text>
+            <View style={styles.nameDisplay}>
+              <Text style={styles.nameText}>{name}</Text>
+            </View>
+            
+            <Text style={styles.label}>Sleep Hours</Text>
+            <TextInput
+              style={styles.input}
+              value={sleepHours}
+              onChangeText={setSleepHours}
+              placeholder="Hours of sleep"
+              placeholderTextColor="#ccc"
+              keyboardType="numeric"
+            />
+            
+            <Text style={styles.label}>Mood</Text>
+            <View style={styles.moodContainer}>
+              {['sad', 'neutral', 'happy'].map((moodOption) => (
+                <TouchableOpacity
+                  key={moodOption}
+                  style={[
+                    styles.moodButton,
+                    mood === moodOption && styles.selectedMood
+                  ]}
+                  onPress={() => setMood(moodOption)}
+                >
+                  <Text style={styles.moodText}>{moodOption}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            <Text style={styles.label}>Water Intake (glasses)</Text>
+            <TextInput
+              style={styles.input}
+              value={waterIntake}
+              onChangeText={setWaterIntake}
+              placeholder="Glasses of water"
+              placeholderTextColor="#ccc"
+              keyboardType="numeric"
+            />
+            
+            <Text style={styles.label}>Screen Time (hours)</Text>
+            <View style={styles.screenTimeContainer}>
+              <Text style={styles.screenTimeText}>{screenTime} hours today</Text>
+              <Text style={styles.screenTimeSubtext}>
+                {Platform.OS === 'web' 
+                  ? 'Time spent in this website'
+                  : 'Time your device has been active'}
+              </Text>
+            </View>
+            
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleSubmit}
+            >
+              <Text style={styles.submitButtonText}>Submit</Text>
+            </TouchableOpacity>
+          </>
+        )}
+      </ScrollView>
     </Animated.View>
   );
 };
@@ -166,6 +436,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     zIndex: 1000,
+    maxHeight: '80%',
+  },
+  expandedContainer: {
+    width: 280,
   },
   content: {
     width: 250,
@@ -227,6 +501,57 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  formHeader: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'white',
+    marginVertical: 10,
+  },
+  label: {
+    color: 'white',
+    fontSize: 14,
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  input: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 5,
+    padding: 10,
+    color: 'white',
+    marginBottom: 10,
+  },
+  moodContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  moodButton: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    padding: 8,
+    borderRadius: 5,
+    flex: 1,
+    marginHorizontal: 3,
+    alignItems: 'center',
+  },
+  selectedMood: {
+    backgroundColor: '#2ecc71',
+  },
+  moodText: {
+    color: 'white',
+  },
+  submitButton: {
+    backgroundColor: '#2ecc71',
+    padding: 12,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 15,
+    marginBottom: 20,
+  },
+  submitButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
 

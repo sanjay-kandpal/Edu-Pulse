@@ -1,6 +1,6 @@
 import { View, Text, Image } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { FlatList } from 'react-native-gesture-handler';
+import { GestureHandlerRootView  } from 'react-native-gesture-handler';
 import GlobalApi from '../Shared/GlobalApi';
 
 // Define interfaces based on your JSON structure
@@ -81,7 +81,7 @@ interface CourseItem {
 
 export default function CourseList() {
   const [courseList, setCourseList] = useState<CourseItem[]>([]);
-  const BASE_URL = `http://${process.env.EXPO_PUBLIC_IP}:1337`;
+  const BASE_URL = `http://${process.env.EXPO_PUBLIC_IP}:3000`;
   useEffect(() => {
     getCourseList();
   }, []);
@@ -114,7 +114,7 @@ export default function CourseList() {
       <Text style={{fontSize: 20, fontWeight: 'bold', marginBottom: 10}}>
         Courses
       </Text>
-      <FlatList
+      <GestureHandlerRootView 
         data={courseList}
         horizontal={true}
         showsHorizontalScrollIndicator={false}
