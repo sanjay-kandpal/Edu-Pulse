@@ -20,7 +20,7 @@ export default function AppLayout() {
           options={{ headerShown: false }} 
         />
         <Stack.Screen 
-          name="courses/index" 
+          name="book-ai/index" 
           options={{ headerShown: false }} 
         />
         <Stack.Screen 

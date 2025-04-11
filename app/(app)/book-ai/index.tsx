@@ -14,6 +14,7 @@ import {
 import axios from 'axios';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
+import { Header } from '@/app/components/Headers';
 
 // Define interface for selected files
 interface SelectedFile {
@@ -215,6 +216,10 @@ const index = () => {
 
   return (
     <ScrollView style={styles.container}>
+      <Header />
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Book AI Assistant</Text>
+      </View>
       <Text style={styles.title}>PDF Q&A Assistant</Text>
 
       <View style={styles.section}>
@@ -314,6 +319,18 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#fff',
+  },
+  header: {
+    backgroundColor: '#4CAF50',
+    padding: 15,
+    alignItems: 'center',
+    marginBottom: 20,
+    borderRadius: 5,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'white',
   },
   title: {
     fontSize: 24,

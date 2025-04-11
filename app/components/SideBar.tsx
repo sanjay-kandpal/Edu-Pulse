@@ -15,7 +15,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   // Memoize menu items and screen width
   const menuItems = useMemo(() => [
     { title: 'Home', route: '/' },
-    { title: 'Courses', route: '/(app)/courses' },
+    { title: 'Read-Book Ai', route: '/(app)/book-ai' },
     { title: 'Step Counter', route: '/(app)/step-counter' },
     { title: 'WaterChallenge Leaderboard', route: '/(app)/leaderboard' }
   ], []);
